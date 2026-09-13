@@ -89,6 +89,89 @@ if ($Action -eq "click_button") {
     }
 })();
 "@
+} elseif ($Action -eq "twitter_extract") {
+    $count = if ($Value) { [int]$Value } else { 20 }
+    $jsPayload = @"
+(async () => {
+    const targetCount = $count;
+    const collected = new Map();
+    let scrollAttempts = 0;
+    const maxScrolls = 10;
+
+    function harvest() {
+        const articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+        for (const article of articles) {
+            const userEl = article.querySelector('[data-testid="User-Name"]');
+            const textEl = article.querySelector('[data-testid="tweetText"]');
+            const linkEl = article.querySelector('a[href*="/status/"]');
+            const fullUserText = userEl ? userEl.innerText : '';
+            const handleMatch = fullUserText.match(/@([A-Za-z0-9_]+)/);
+            const handle = handleMatch ? handleMatch[0] : '';
+            const author = fullUserText.split('\n')[0].trim();
+            const text = textEl ? textEl.innerText.trim() : '';
+            const tweetUrl = linkEl ? linkEl.href : '';
+            const tweetIdMatch = tweetUrl.match(/status\/(\d+)/);
+            const id = tweetIdMatch ? tweetIdMatch[1] : (handle + '_' + text.slice(0, 30));
+
+            if (id && !collected.has(id) && (text.length > 0 || linkEl)) {
+                const likeBtn = article.querySelector('button[data-testid="like"], button[data-testid="unlike"]');
+                const retweetBtn = article.querySelector('button[data-testid="retweet"], button[data-testid="unretweet"]');
+                const getCount = (btn) => {
+                    if (!btn) return '0';
+                    const t = btn.innerText.trim();
+                    if (t) return t;
+                    const label = btn.getAttribute('aria-label') || '';
+                    const m = label.match(/([\d,\.]+[KkMm]?)/);
+                    return m ? m[1] : '0';
+                };
+                collected.set(id, {
+                    author: author,
+                    handle: handle,
+                    text: text,
+                    likes: getCount(likeBtn),
+                    reposts: getCount(retweetBtn)
+                });
+            }
+        }
+    }
+
+    harvest();
+    while (collected.size < targetCount && scrollAttempts < maxScrolls) {
+        window.scrollBy(0, 800);
+        await new Promise(r => setTimeout(r, 450));
+        harvest();
+        scrollAttempts++;
+    }
+
+    const results = Array.from(collected.values()).slice(0, targetCount);
+    if (typeof copy === 'function') {
+        copy(JSON.stringify(results, null, 2));
+    }
+    console.table(results);
+    return results;
+})();
+"@
+} elseif ($Action -eq "twitter_interact") {
+    $q = $TargetText.ToLower().Trim()
+    $act = if ($Value) { $Value.ToLower().Trim() } else { "like" }
+    $jsPayload = @"
+(() => {
+    $(Get-HelperJs)
+    const query = '$q';
+    const action = '$act';
+    const articles = Array.from(document.querySelectorAll('article[data-testid="tweet"]'));
+    const match = articles.find(a => a.innerText.toLowerCase().includes(query));
+    if (!match) {
+        console.warn('[computer-use] Tweet not found: ' + query);
+        return;
+    }
+    let btn = match.querySelector('button[data-testid="' + action + '"]') || match.querySelector('button[data-testid="like"]');
+    if (btn) {
+        triggerEvents(btn);
+        console.log('[computer-use] Interacted with tweet (' + action + ')');
+    }
+})();
+"@
 } elseif ($Action -eq "raw") {
     $jsPayload = $RawJs
 }

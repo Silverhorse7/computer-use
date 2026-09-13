@@ -86,60 +86,55 @@ Import-Module .\powershell\ComputerUse.psd1
 
 ## 🚀 Quick Start
 
-### 1. Python API
+### 1. Real-World Showcase: Twitter / X Feed Automation & Summarizer
+Extract 20 virtualized posts from a live social feed, synthesize trending topics, and interact (like/bookmark) in milliseconds:
+
 ```python
 from computer_use import ComputerUseController
 
 cu = ComputerUseController()
 
-# Navigate
-cu.navigate("https://app.dashboard.internal/wizard")
+# 1. Navigate to Twitter / X home feed
+cu.navigate("https://x.com/home")
 
-# Tier 1: Ultra-fast DOM Injection (<20ms)
+# 2. Tier 1 DOM Injection: Extract 20 posts with auto-scrolling (<1s total)
+posts = cu.extract_twitter_posts(count=20, auto_scroll=True)
+
+# 3. Content Intelligence: Generate executive markdown digest
+summary = cu.summarize_feed(posts)
+print(summary["markdown_digest"])
+
+# 4. Tier 1 Synthetic Click: Like a target post in <20ms without perception delay
+cu.interact_twitter_post(query="open-source", action="like")
+```
+
+### 2. General DOM Injection (<20ms)
+```python
+# Ultra-fast DOM interactions for React / Vue / Angular apps
 cu.dom.select_radio("High Availability Multi-Region")
 cu.dom.fill_input("Cluster Name", "production-us-east")
 cu.dom.click_button("Deploy Changes")
+```
 
-# Tier 2: In-Memory Fast Batched Vision (~150ms)
+### 3. Tier 2: In-Memory Fast Batched Vision (~150ms)
+```python
 # Detects all form fields on screen in 150ms and fills them in sequence
 cu.batch.batch_fill_dropdowns("form_screen.png", field_click_delay_ms=180)
-
-# Tier 3: Native Win32 control
-cu.click(1250, 480)
-cu.press_key("^l")
-cu.scroll(-500)
 ```
 
-### 2. Command Line Interface (CLI)
-```bash
-# Capture active screen
-computer-use capture screen.png
-
-# Click by button text via DOM (<20ms)
-computer-use dom-click "Deploy Changes"
-
-# Select radio by label
-computer-use dom-radio "High Availability Multi-Region"
-
-# Scan an image for input boxes in 150ms
-computer-use batch-scan form.png
-
-# Native OS click
-computer-use click 1280 850
-```
-
-### 3. Native PowerShell Automation
+### 4. Native PowerShell Automation (Zero-Dependency)
 ```powershell
 Import-Module .\powershell\ComputerUse.psd1
 
-# Capture window
+# Harvest 20 feed posts in milliseconds
+Invoke-CUTwitterExtract -Count 20
+
+# Like target tweet via synthetic DOM dispatch (<20ms)
+Invoke-CUTwitterInteract -Query "open-source" -Action "like"
+
+# Fast Screen Capture & OS Click
 Invoke-CUCapture -Path "screen.png"
-
-# Fast DOM Click
-Invoke-CUDOMClick -ButtonText "Continue"
-
-# In-Memory Fast Scan
-Invoke-CUBatchScan -ImagePath "screen.png"
+Invoke-CUClick -X 1280 -Y 850
 ```
 
 ---
@@ -152,8 +147,8 @@ Invoke-CUBatchScan -ImagePath "screen.png"
    Runs desktop primitives in isolated `OpenInputDesktop` STA threads, preventing crashes from background session switching, UAC elevation boundaries, and multi-monitor DPI scaling.
 3. **In-Memory UI Border Detection**:
    Extracts dropdowns, text areas, and red validation error borders (`R>170, G<70, B<70`) via raw pixel contrast analysis in under 150ms without invoking third-party vision models.
-4. **DevTools Auto-Closure**:
-   Automatically closes DevTools (`F12`) after script execution, eliminating layout shifts and DOM viewport recalculation delays.
+4. **DevTools Auto-Closure & Clipboard Bridge**:
+   Automatically communicates through console evaluation bridges and closes DevTools (`F12`), eliminating layout shifts and DOM viewport recalculation delays.
 
 ---
 
@@ -162,26 +157,28 @@ Invoke-CUBatchScan -ImagePath "screen.png"
 ```
 computer-use/
 ├── computer_use/              # Core Python Package
-│   ├── __init__.py            # Exports Controller and Engines
+│   ├── __init__.py            # Exports Controller, Drivers, and FeedSummarizer
 │   ├── core.py                # ComputerUseController orchestrator
-│   ├── engine_win32.py        # Win32 STA driver (OpenInputDesktop, SetCursorPos)
+│   ├── feed_summarizer.py     # Social feed summarizer & topic intelligence
+│   ├── engine_win32.py        # Win32 STA driver (OpenInputDesktop, SetCursorPos, Clipboard)
 │   ├── engine_dom.py          # DevTools DOM injection & synthetic events
 │   ├── engine_vision.py       # In-memory border scanner & color segmentation
 │   ├── engine_batch.py        # Multi-field sequential batch filler
 │   └── cli.py                 # Command line interface
 ├── powershell/                # Standalone Native Windows Module (Zero Dependency)
 │   ├── ComputerUse.psd1       # Module manifest
-│   ├── ComputerUse.psm1       # Cmdlets export
+│   ├── ComputerUse.psm1       # Cmdlets export (including Twitter automation)
 │   ├── CU_Engine.ps1          # Win32 STA native driver
 │   ├── BatchEngine.ps1        # Fast in-memory border detection
-│   └── DOMInjection.ps1       # DevTools DOM runner
+│   └── DOMInjection.ps1       # DevTools DOM runner & social automation
 ├── examples/                  # Ready-to-run examples
 │   ├── 01_quickstart.py
-│   ├── 02_batched_form_filler.py
-│   ├── 03_hybrid_dom_automation.py
-│   ├── 04_powershell_native.ps1
+│   ├── 02_twitter_feed_summarizer.py
+│   ├── 03_batched_form_filler.py
+│   ├── 04_hybrid_dom_automation.py
+│   ├── 05_powershell_native.ps1
 │   └── benchmarks/            # Benchmark suite & data
-├── tests/                     # Unit test suite
+├── tests/                     # Unit test suite (13 passing tests)
 └── pyproject.toml             # Standard packaging
 ```
 

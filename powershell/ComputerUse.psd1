@@ -15,7 +15,9 @@
         'Invoke-CUScroll',
         'Invoke-CUDOMClick',
         'Invoke-CUDOMRadio',
-        'Invoke-CUBatchScan'
+        'Invoke-CUBatchScan',
+        'Invoke-CUTwitterExtract',
+        'Invoke-CUTwitterInteract'
     )
     CmdletsToExport = @()
     VariablesToExport = @()

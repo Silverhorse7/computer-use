@@ -82,4 +82,23 @@ function Invoke-CUBatchScan {
     & $BatchScript -Action scan -ImagePath $ImagePath
 }
 
-Export-ModuleMember -Function Invoke-CUCapture, Invoke-CUClick, Invoke-CUSendKeys, Invoke-CUNavigate, Invoke-CUScroll, Invoke-CUDOMClick, Invoke-CUDOMRadio, Invoke-CUBatchScan
+function Invoke-CUTwitterExtract {
+    [CmdletBinding()]
+    param(
+        [int]$Count = 20
+    )
+    & $DOMScript -Action twitter_extract -Value $Count
+}
+
+function Invoke-CUTwitterInteract {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Query,
+        [string]$Action = "like"
+    )
+    & $DOMScript -Action twitter_interact -TargetText $Query -Value $Action
+}
+
+Export-ModuleMember -Function Invoke-CUCapture, Invoke-CUClick, Invoke-CUSendKeys, Invoke-CUNavigate, Invoke-CUScroll, Invoke-CUDOMClick, Invoke-CUDOMRadio, Invoke-CUBatchScan, Invoke-CUTwitterExtract, Invoke-CUTwitterInteract
+

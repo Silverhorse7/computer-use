@@ -122,3 +122,24 @@ Write-Output "OK: Navigated to {url}"
         if self.script_path:
             return self._run_ps(["-File", self.script_path, "-Action", "maximize"])
         return "OK: Maximize invoked"
+
+    def set_clipboard(self, text: str) -> None:
+        """Set text into the Windows OS clipboard."""
+        import base64
+        b64 = base64.b64encode(text.encode("utf-8")).decode("ascii")
+        ps_code = f"""
+Add-Type -AssemblyName System.Windows.Forms
+$bytes = [Convert]::FromBase64String('{b64}')
+$str = [System.Text.Encoding]::UTF8.GetString($bytes)
+[System.Windows.Forms.Clipboard]::SetText($str)
+"""
+        self._run_ps(["-Command", ps_code])
+
+    def get_clipboard(self) -> str:
+        """Get current text from the Windows OS clipboard."""
+        ps_code = """
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Clipboard]::GetText()
+"""
+        return self._run_ps(["-Command", ps_code])
+

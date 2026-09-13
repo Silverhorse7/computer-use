@@ -1,5 +1,5 @@
 """
-Example 02: In-Memory Fast Batched Form Filling.
+Example 03: In-Memory Fast Batched Form Filling.
 
 Demonstrates scanning an entire multi-field form in ~150ms and filling
 all dropdowns in rapid succession without LLM vision delays.

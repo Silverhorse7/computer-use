@@ -1,5 +1,5 @@
 """
-Example 03: Hybrid DevTools DOM Injection (<20ms).
+Example 04: Hybrid DevTools DOM Injection (<20ms).
 
 Demonstrates direct synthetic event dispatching for buttons, radio groups,
 and text inputs on dynamic web applications.

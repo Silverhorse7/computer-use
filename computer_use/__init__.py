@@ -10,6 +10,7 @@ from .engine_win32 import Win32Driver
 from .engine_dom import DOMDriver
 from .engine_vision import BatchVisionEngine
 from .engine_batch import FormBatchFiller
+from .feed_summarizer import FeedSummarizer
 
 __version__ = "0.1.0"
 __author__ = "Yosef Madboly"
@@ -19,4 +20,6 @@ __all__ = [
     "DOMDriver",
     "BatchVisionEngine",
     "FormBatchFiller",
+    "FeedSummarizer",
 ]
+

@@ -56,6 +56,8 @@ tmp/
 Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
-Desktop.ini
-$RECYCLE.BIN/
-.DS_Store
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+

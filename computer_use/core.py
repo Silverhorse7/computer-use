@@ -9,6 +9,7 @@ from .engine_win32 import Win32Driver
 from .engine_dom import DOMDriver
 from .engine_vision import BatchVisionEngine, BoundingBox
 from .engine_batch import FormBatchFiller
+from .feed_summarizer import FeedSummarizer
 
 
 class ComputerUseController:
@@ -26,6 +27,8 @@ class ComputerUseController:
         self.dom = DOMDriver(win32=self.win32)
         self.vision = BatchVisionEngine()
         self.batch = FormBatchFiller(win32=self.win32, vision=self.vision)
+        self.summarizer = FeedSummarizer()
+
 
     # --- OS / Desktop Primitives ---
 
@@ -82,3 +85,24 @@ class ComputerUseController:
             return True
 
         return False
+
+    # --- Feed & Social Intelligence Primitives ---
+
+    def extract_twitter_posts(self, count: int = 20, auto_scroll: bool = True) -> List[Dict[str, Any]]:
+        """
+        Extract up to `count` posts from the active Twitter/X feed via Tier 1 DOM injection.
+        """
+        return self.dom.extract_twitter_posts(count=count, auto_scroll=auto_scroll)
+
+    def interact_twitter_post(self, query: str, action: str = "like") -> Dict[str, Any]:
+        """
+        Find tweet matching `query` and trigger action ('like', 'bookmark', 'retweet', 'reply').
+        """
+        return self.dom.interact_twitter_post(query=query, action=action)
+
+    def summarize_feed(self, posts: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Synthesize analytics, trending hashtags, top topics, and markdown digest from posts.
+        """
+        return self.summarizer.summarize(posts)
+

@@ -1,5 +1,5 @@
 <#
-Example 04: Native PowerShell Automation (Zero External Dependencies)
+Example 05: Native PowerShell Automation (Zero External Dependencies)
 #>
 
 $modulePath = Join-Path $PSScriptRoot "..\powershell\ComputerUse.psd1"
