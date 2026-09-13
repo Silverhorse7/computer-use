@@ -170,7 +170,13 @@ computer-use/
 │   ├── ComputerUse.psm1       # Cmdlets export (including Twitter automation)
 │   ├── CU_Engine.ps1          # Win32 STA native driver
 │   ├── BatchEngine.ps1        # Fast in-memory border detection
-│   └── DOMInjection.ps1       # DevTools DOM runner & social automation
+├── .agents/                   # Antigravity Workspace Customizations
+│   └── skills/computer-use/   # Native Agent Skill for pair-programming assistants
+│       ├── SKILL.md           # Skill runbook and routing hierarchy
+│       ├── references/        # API and architecture cheat sheets
+│       └── scripts/           # Standalone automation helpers
+├── skills/                    # Mirror skill directory
+│   └── computer-use/
 ├── examples/                  # Ready-to-run examples
 │   ├── 01_quickstart.py
 │   ├── 02_twitter_feed_summarizer.py
@@ -181,6 +187,20 @@ computer-use/
 ├── tests/                     # Unit test suite (13 passing tests)
 └── pyproject.toml             # Standard packaging
 ```
+
+---
+
+## 🧠 Agent Skill Integration (Antigravity & AI Coding Agents)
+
+This repository includes a native workspace skill located in `.agents/skills/computer-use/` and `skills/computer-use/`:
+
+- **Automated Routing**: Teaches AI coding agents when and how to bypass visual perception loops in favor of sub-20ms DOM injection and in-memory contrast scanning.
+- **Step-by-Step Runbooks**: Contains runbooks for Twitter/X feed reading and interaction, dynamic form automation, and Win32 STA execution.
+- **Progressive Disclosure**: Detailed reference documentation (`references/api-reference.md` and `references/architecture.md`) loaded on demand to minimize context overhead.
+- **Standalone Scripts**: Includes executable helpers in `scripts/` (`twitter_digest.py`, `batch_scan.py`).
+
+Any Antigravity assistant loaded in this workspace will automatically discover and utilize this skill.
+
 
 ---
 
