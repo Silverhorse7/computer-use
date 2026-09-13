@@ -1,222 +1,243 @@
-# 🚀 Computer Use
+# computer-use
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Cross--Platform-lightgrey.svg)](https://github.com/Silverhorse7/computer-use)
-[![Speedup](https://img.shields.io/badge/Speedup->100x%20vs%20Visual%20Loop-brightgreen.svg)](docs/BENCHMARKS.md)
 
-**High-Performance Hybrid Computer Use & Browser Automation Engine.**
+`computer-use` is an experimental browser and desktop automation engine.
 
-Bypasses the traditional AI visual perception bottleneck by combining **DevTools DOM Injection (<20ms)**, **In-Memory Batched Vision (~150ms)**, and **Resilient Win32 STA OS Primitives**.
+I built it while working with computer-use agents and getting annoyed by how often simple UI actions required another screenshot, another multimodal model call, and another few seconds of waiting.
 
----
+The basic idea is simple: use the cheapest reliable interaction method first.
 
-## ⚡ The Problem: The AI Computer Use Bottleneck
+For browser tasks, that usually means the DOM. For simple visual recovery, use local image processing. For native desktop interaction, fall back to Windows primitives.
 
-Current AI Computer Use agents (Claude Computer Use, OSWorld, RPA tools) operate on a naive **Perception-Action Loop**:
+The model can still decide what to do, without needing a vision model for every click.
 
-```mermaid
-flowchart TD
-    subgraph Traditional_Loop["❌ Traditional Visual Loop (8–12 seconds per action)"]
-        A["1. Capture Screenshot (300ms)"] --> B["2. Encode & Upload to Multimodal LLM (800ms)"]
-        B --> C["3. Vision LLM Inference (5,000–8,000ms)"]
-        C --> D["4. Formulate 1 Single Coordinate (400ms)"]
-        D --> E["5. OS Synthetic Click (150ms)"]
-        E --> A
-    end
-```
+## How it works
 
-### Why this fails in the real world:
-- **Painfully Slow**: A standard 7-field web form takes **65 to 120 seconds**.
-- **Expensive**: Burning 7+ multimodal image API requests ($0.15–$0.40) on simple form fields.
-- **Brittle**: Subject to visual hallucinations, layout shifts, DPI scaling mismatches, and pixel drift.
+There are currently three interaction paths:
 
----
+1. **DOM / DevTools**  
+   Direct browser interaction and extraction through DevTools.
 
-## 💡 The Solution: 3-Tier Hybrid Architecture
+   Typical interaction latency on my machine is under 20ms.
 
-`computer-use` introduces an adaptive 3-tier hierarchy that routes interactions to the fastest possible reliable layer:
+2. **Local vision**  
+   In-memory image processing for cases where DOM access is not available or useful.
+
+   I currently use this for things like field and validation-border detection.
+
+3. **Win32**  
+   Native Windows primitives for scrolling, keyboard input, mouse interaction, window management, and screen capture.
+
+The layers can fall back to each other depending on the task.
 
 ```mermaid
 flowchart TD
-    subgraph Hybrid_Architecture["⚡ computer-use 3-Tier Hybrid Engine"]
-        Task["User / Agent Action"] --> Decide{"Is Target in Browser Context?"}
-        
-        Decide -- Yes --> Tier1["Tier 1: DevTools DOM Injection (<20 ms)\n• Direct Synthetic Events (MouseEvent/KeyboardEvent)\n• Zero Vision Delay • React/Vue/Angular Compatible"]
-        
-        Decide -- No / Fallback --> Tier2["Tier 2: In-Memory Batched Vision (~150 ms)\n• Direct Bitmap Contrast Border Scan\n• Color Segmentation • Zero LLM Cost\n• Batches 7 Fields in 8s instead of 70s"]
-        
-        Tier1 -- Fallback --> Tier2
-        Tier2 --> Tier3["Tier 3: Resilient Win32 STA Primitives\n• OpenInputDesktop & SetThreadDesktop Isolation\n• Hardware Accelerated PrintWindow\n• SendKeys / mouse_event"]
-    end
+    Task["Agent action"] --> Browser{"Browser target?"}
+
+    Browser -- Yes --> DOM["DOM / DevTools"]
+    Browser -- No --> Vision["Local vision"]
+
+    DOM -- Fallback --> Vision
+    Vision --> Win32["Win32 primitives"]
 ```
 
----
+## Why
 
-## 📊 Real-World Benchmarks
+A typical vision-driven computer-use loop looks roughly like this:
 
-Empirical performance measured on live multi-step application forms in Google Chrome on Windows 11 (2560x1440):
+```text
+take screenshot
+    ↓
+send screenshot to multimodal model
+    ↓
+wait for inference
+    ↓
+get coordinates/action
+    ↓
+perform action
+    ↓
+repeat
+```
 
-| Architecture Layer | Perception Latency | Per-Action Roundtrip | 7-Field Form Time | Speedup vs Baseline | API Token Cost |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Traditional Visual Loop** | 6,500 – 8,500 ms | 8,230 ms | 65.80 s | 1x (Baseline) | ~$0.14 / form |
-| **Tier 2: Fast Batched Vision** | **158 ms** | **1,220 ms** | **8.57 s** | **~7.7x faster** | **$0.00** |
-| **Tier 1: DevTools DOM Injection** | **6 – 19 ms** | **< 20 ms** | **0.45 s** | **> 100x faster** | **$0.00** |
+That is useful when visual reasoning is actually required.
 
-👉 Detailed breakdown available in [docs/BENCHMARKS.md](examples/benchmarks/BENCHMARKS.md).
+It is less useful when the agent is filling seven normal form fields or clicking a button that is already available in the DOM.
 
----
+I wanted the reasoning model to spend its time making decisions rather than repeatedly rediscovering the UI.
 
-## 📦 Installation
+## Benchmarks
+
+These are measurements from my own machine using Chrome on Windows 11 at 2560x1440.
+
+| Method | Detection / perception | 7-field form |
+| --- | ---: | ---: |
+| Vision model loop | 6.5-8.5s per step | 65.8s |
+| Local batched vision | ~158ms | 8.57s |
+| DOM / DevTools | 6-19ms | ~0.45s |
+
+The exact numbers obviously depend on the machine, page, model, network, and task.
+
+The useful part for me is less the exact speedup and more that deterministic UI work no longer needs an LLM round trip.
+
+More benchmark details are in [`examples/benchmarks/BENCHMARKS.md`](examples/benchmarks/BENCHMARKS.md).
+
+## Installation
 
 ### Python
+
 ```bash
 git clone https://github.com/Silverhorse7/computer-use.git
 cd computer-use
 pip install -e .
 ```
 
-### PowerShell (Zero-Dependency)
-No installation required! Just import the native module:
+### PowerShell
+
+The Windows module can also be imported directly:
+
 ```powershell
 Import-Module .\powershell\ComputerUse.psd1
 ```
 
----
-
-## 🚀 Quick Start
-
-### 1. Real-World Showcase: Twitter / X Feed Automation & Summarizer
-Extract 20 virtualized posts from a live social feed, synthesize trending topics, and interact (like/bookmark) in milliseconds:
+## Example
 
 ```python
 from computer_use import ComputerUseController
 
 cu = ComputerUseController()
 
-# 1. Navigate to Twitter / X home feed
 cu.navigate("https://x.com/home")
 
-# 2. Tier 1 DOM Injection: Extract 20 posts with auto-scrolling (<1s total)
-posts = cu.extract_twitter_posts(count=20, auto_scroll=True)
+posts = cu.extract_twitter_posts(
+    count=20,
+    auto_scroll=True,
+)
 
-# 3. Content Intelligence: Generate executive markdown digest
 summary = cu.summarize_feed(posts)
 print(summary["markdown_digest"])
 
-# 4. Tier 1 Synthetic Click: Like a target post in <20ms without perception delay
-cu.interact_twitter_post(query="open-source", action="like")
+cu.interact_twitter_post(
+    query="open-source",
+    action="like",
+)
 ```
 
-### 2. General DOM Injection (<20ms)
+This uses DOM extraction for the feed rather than repeatedly screenshotting and re-reading the page.
+
+### DOM interaction
+
 ```python
-# Ultra-fast DOM interactions for React / Vue / Angular apps
 cu.dom.select_radio("High Availability Multi-Region")
 cu.dom.fill_input("Cluster Name", "production-us-east")
 cu.dom.click_button("Deploy Changes")
 ```
 
-### 3. Tier 2: In-Memory Fast Batched Vision (~150ms)
+### Local vision
+
 ```python
-# Detects all form fields on screen in 150ms and fills them in sequence
-cu.batch.batch_fill_dropdowns("form_screen.png", field_click_delay_ms=180)
+cu.batch.batch_fill_dropdowns(
+    "form_screen.png",
+    field_click_delay_ms=180,
+)
 ```
 
-### 4. Native PowerShell Automation (Zero-Dependency)
+### PowerShell
+
 ```powershell
 Import-Module .\powershell\ComputerUse.psd1
 
-# Harvest 20 feed posts in milliseconds
 Invoke-CUTwitterExtract -Count 20
-
-# Like target tweet via synthetic DOM dispatch (<20ms)
 Invoke-CUTwitterInteract -Query "open-source" -Action "like"
 
-# Fast Screen Capture & OS Click
 Invoke-CUCapture -Path "screen.png"
 Invoke-CUClick -X 1280 -Y 850
 ```
 
----
+## Implementation notes
 
-## 🛠️ Key Technical Innovations
+### Browser interaction
 
-1. **Synthetic React/Framework Event Dispatching**:
-   Dispatches the full event cycle (`mouseenter` -> `mouseover` -> `mousedown` -> `mouseup` -> `click` -> `input` -> `change`), ensuring complex SPAs (React, Vue, Angular) register state changes correctly without requiring user-focus polling.
-2. **STA Thread Desktop Isolation**:
-   Runs desktop primitives in isolated `OpenInputDesktop` STA threads, preventing crashes from background session switching, UAC elevation boundaries, and multi-monitor DPI scaling.
-3. **In-Memory UI Border Detection**:
-   Extracts dropdowns, text areas, and red validation error borders (`R>170, G<70, B<70`) via raw pixel contrast analysis in under 150ms without invoking third-party vision models.
-4. **DevTools Auto-Closure & Clipboard Bridge**:
-   Automatically communicates through console evaluation bridges and closes DevTools (`F12`), eliminating layout shifts and DOM viewport recalculation delays.
+The DOM driver dispatches browser events directly, including things like:
 
----
-
-## 📁 Repository Structure
-
+```text
+mouseenter
+mouseover
+mousedown
+mouseup
+click
+input
+change
 ```
+
+This is mainly to make interaction with React/Vue/Angular applications behave more like normal user input.
+
+### Windows automation
+
+The Windows backend uses Win32 APIs including `OpenInputDesktop`, `SetThreadDesktop`, cursor/input primitives, clipboard access, and window capture.
+
+A fair amount of the work here came from dealing with Windows-specific behavior around desktop sessions, focus, DPI scaling, and background execution.
+
+### Local vision
+
+The vision layer is deliberately simple.
+
+It currently uses pixel-level heuristics for things like input borders, dropdowns, text areas, and validation states.
+
+For example, validation borders can be detected without sending the screen to a vision model.
+
+This is not intended to replace general-purpose computer vision. It is mostly a fast fallback for UI structures that are easy to detect locally.
+
+## Repository layout
+
+```text
 computer-use/
-├── computer_use/              # Core Python Package
-│   ├── __init__.py            # Exports Controller, Drivers, and FeedSummarizer
-│   ├── core.py                # ComputerUseController orchestrator
-│   ├── feed_summarizer.py     # Social feed summarizer & topic intelligence
-│   ├── engine_win32.py        # Win32 STA driver (OpenInputDesktop, SetCursorPos, Clipboard)
-│   ├── engine_dom.py          # DevTools DOM injection & synthetic events
-│   ├── engine_vision.py       # In-memory border scanner & color segmentation
-│   ├── engine_batch.py        # Multi-field sequential batch filler
-│   └── cli.py                 # Command line interface
-├── powershell/                # Standalone Native Windows Module (Zero Dependency)
-│   ├── ComputerUse.psd1       # Module manifest
-│   ├── ComputerUse.psm1       # Cmdlets export (including Twitter automation)
-│   ├── CU_Engine.ps1          # Win32 STA native driver
-│   ├── BatchEngine.ps1        # Fast in-memory border detection
-├── .agents/                   # Antigravity Workspace Customizations
-│   └── skills/computer-use/   # Native Agent Skill for pair-programming assistants
-│       ├── SKILL.md           # Skill runbook and routing hierarchy
-│       ├── references/        # API and architecture cheat sheets
-│       └── scripts/           # Standalone automation helpers
-├── skills/                    # Mirror skill directory
+├── computer_use/
+│   ├── core.py
+│   ├── engine_dom.py
+│   ├── engine_win32.py
+│   ├── engine_vision.py
+│   ├── engine_batch.py
+│   ├── feed_summarizer.py
+│   └── cli.py
+├── powershell/
+│   ├── ComputerUse.psd1
+│   ├── ComputerUse.psm1
+│   ├── CU_Engine.ps1
+│   └── BatchEngine.ps1
+├── skills/
 │   └── computer-use/
-├── examples/                  # Ready-to-run examples
-│   ├── 01_quickstart.py
-│   ├── 02_twitter_feed_summarizer.py
-│   ├── 03_batched_form_filler.py
-│   ├── 04_hybrid_dom_automation.py
-│   ├── 05_powershell_native.ps1
-│   └── benchmarks/            # Benchmark suite & data
-├── tests/                     # Unit test suite (13 passing tests)
-└── pyproject.toml             # Standard packaging
+├── examples/
+├── tests/
+└── pyproject.toml
 ```
 
----
+## Agent integration
 
-## 🧠 Agent Skill Integration (Antigravity & AI Coding Agents)
+The repository also contains an agent skill under:
 
-This repository includes a native workspace skill located in `.agents/skills/computer-use/` and `skills/computer-use/`:
+```text
+skills/computer-use/
+```
 
-- **Automated Routing**: Teaches AI coding agents when and how to bypass visual perception loops in favor of sub-20ms DOM injection and in-memory contrast scanning.
-- **Step-by-Step Runbooks**: Contains runbooks for Twitter/X feed reading and interaction, dynamic form automation, and Win32 STA execution.
-- **Progressive Disclosure**: Detailed reference documentation (`references/api-reference.md` and `references/architecture.md`) loaded on demand to minimize context overhead.
-- **Standalone Scripts**: Includes executable helpers in `scripts/` (`twitter_digest.py`, `batch_scan.py`).
+It documents when an agent should use DOM interaction, local vision, or native desktop automation.
 
-Any Antigravity assistant loaded in this workspace will automatically discover and utilize this skill.
+I originally added this because I wanted coding agents to treat computer interaction as another tool rather than defaulting to screenshot-based reasoning for everything.
 
+There are also small scripts for common flows such as feed extraction and form scanning.
 
----
+## Status
 
-## 🤝 Contributing
+This is still early and mostly built around problems I personally ran into.
 
-Contributions are welcome! Feel free to open an issue or submit a pull request:
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Windows is currently the most developed desktop backend. Browser automation is more portable, while some of the native functionality is obviously Windows-specific.
 
----
+There are likely plenty of weird applications and pages that it does not handle well yet.
 
-## 📄 License
+Issues, ideas, and PRs are welcome.
 
-Distributed under the MIT License. See `LICENSE` for more information.
+## License
 
-Developed by [Yosef Madboly](https://github.com/Silverhorse7).
+MIT
